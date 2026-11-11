@@ -1,5 +1,6 @@
 package de.lenny.viergewinnt.game;
 
+import java.util.Random;
 import java.util.Scanner;
 
 public class Game {
@@ -8,16 +9,12 @@ public class Game {
     private char[][] field;
 
     private Player[] players = new Player[2];
-    private Player turnPlayer;
+    private final int size;
 
-    private final int x;
-    private final int y;
+    public Game(int size) {
+        this.size = size;
 
-    public Game(int x, int y) {
-        this.x = x;
-        this.y = y;
-
-        fieldInit(x, y);
+        fieldInit(size, size);
     }
 
     private void fieldInit(int x, int y) {
@@ -31,21 +28,33 @@ public class Game {
 
     public void play() {
         Scanner scanner = new Scanner(System.in);
+        initializePlayer(scanner);
+
+        boolean turnPlayerOne = new Random().nextBoolean();
+
+        render();
+
         while (this.running) {
-            if(players[0] == null || players[1] == null) {
+            if (players[0] == null || players[1] == null) {
                 System.out.println("No players found");
                 return;
             }
 
+            Player turnPlayer = turnPlayerOne ? players[0] : players[1];
+            System.out.println("Turn of " + turnPlayer.getName());
 
-            int input = Integer.parseInt(scanner.next());
-            //bestimme Spieler
+            int inputLocation = Integer.parseInt(scanner.next());
 
-            place(turnPlayer, input);
-
+            place(turnPlayer, inputLocation);
             System.out.println("--------------");
             render();
 
+            if (wonHorizontal(turnPlayer) || wonVertical(turnPlayer)) {
+                System.out.println(turnPlayer.getName() + " won!");
+                break;
+            }
+
+            turnPlayerOne = !turnPlayerOne;
             /*
             2 Players
             3 Winconditions
@@ -55,30 +64,98 @@ public class Game {
         }
     }
 
-    public void render() {
+    private void initializePlayer(Scanner scanner) {
+        System.out.println("Welcome to the game!");
+        System.out.println("Enter name for player one!");
+        String namePlayerOne = scanner.next();
+        System.out.println("Enter mark for player one!");
+        char markOne = scanner.next().charAt(0);
+        players[0] = new Player(namePlayerOne, markOne);
+        System.out.println("Enter name for player two!");
+        String namePlayerTwo = scanner.next();
+        System.out.println("Enter mark for player two!");
+        char markTwo = scanner.next().charAt(0);
+        players[1] = new Player(namePlayerTwo, markTwo);
+    }
+
+    private void render() {
         //row
-        for (int i = 0; i < x; i++) {
+        for (int i = 0; i < size; i++) {
             //collum
-            for (int j = 0; j < y; j++) {
+            for (int j = 0; j < size; j++) {
                 System.out.print("|" + field[i][j] + "|");
             }
             System.out.println("");
         }
     }
 
-    public boolean place(Player player, int locationX) {
-        if(locationX > x) {
+    record Location(int x, int y){};
+
+    private Location place(Player player, int locationX) {
+        if (locationX > size) {
             System.out.println("Invalid location");
-            return false;
+            return null;
         }
 
-        for (int i = y - 1; i >= 0; i--) {
+        for (int i = size - 1; i >= 0; i--) {
             if (!(field[locationX][i] == '\0')) {
                 continue;
             }
-            field[locationX][i] = 'O';
-            return true;
+            field[locationX][i] = player.getMark();
+            return new Location(locationX, i);
         }
+        return null;
+    }
+
+    private boolean wonVertical(Player player) {
+        int buffer = 0;
+
+        //Vertical Check
+        for (int i = 0; i < size; i++) {
+            buffer = 0;
+            for (int j = 0; j < size; j++) {
+                if (field[i][j] == player.getMark()) {
+                    buffer++;
+                }
+            }
+
+            if (buffer == size) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean wonHorizontal(Player player) {
+        int buffer = 0;
+
+        //Horizontal Check
+        for (int i = 0; i < size; i++) {
+            buffer = 0;
+            for (int j = 0; j < size; j++) {
+                if (field[j][i] == player.getMark()) {
+                    buffer++;
+                }
+            }
+            if (buffer == size) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //TODO: überleg nochmal
+    private boolean wonCross(Player player, Location location) {
+        int buffer = 0;
+
+        for (int i = location.x; i < size; i++) {
+
+        }
+
+        for (int i = location.x; i < size; i--) {
+
+        }
+
         return false;
     }
 }
