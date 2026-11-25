@@ -45,11 +45,11 @@ public class Game {
 
             int inputLocation = Integer.parseInt(scanner.next());
 
-            place(turnPlayer, inputLocation);
+            Location location = place(turnPlayer, inputLocation);
             System.out.println("--------------");
             render();
 
-            if (wonHorizontal(turnPlayer) || wonVertical(turnPlayer)) {
+            if (wonHorizontal(turnPlayer) || wonVertical(turnPlayer) || wonCross(turnPlayer, location)) {
                 System.out.println(turnPlayer.getName() + " won!");
                 break;
             }
@@ -110,7 +110,6 @@ public class Game {
     private boolean wonVertical(Player player) {
         int buffer = 0;
 
-        //Vertical Check
         for (int i = 0; i < size; i++) {
             buffer = 0;
             for (int j = 0; j < size; j++) {
@@ -129,7 +128,6 @@ public class Game {
     private boolean wonHorizontal(Player player) {
         int buffer = 0;
 
-        //Horizontal Check
         for (int i = 0; i < size; i++) {
             buffer = 0;
             for (int j = 0; j < size; j++) {
@@ -144,18 +142,35 @@ public class Game {
         return false;
     }
 
-    //TODO: überleg nochmal
     private boolean wonCross(Player player, Location location) {
-        int buffer = 0;
-
-        for (int i = location.x; i < size; i++) {
-
+        if (location == null) {
+            return false;
         }
 
-        for (int i = location.x; i < size; i--) {
-
+        // Diagonale 1: beide Koordinaten laufen in die gleiche Richtung
+        int buffer = 1;
+        for (int i = 1; isMark(player, location.x + i, location.y + i); i++) {
+            buffer++;
+        }
+        for (int i = 1; isMark(player, location.x - i, location.y - i); i++) {
+            buffer++;
+        }
+        if (buffer >= size) {
+            return true;
         }
 
-        return false;
+        // Diagonale 2: Koordinaten laufen gegeneinander
+        buffer = 1;
+        for (int i = 1; isMark(player, location.x + i, location.y - i); i++) {
+            buffer++;
+        }
+        for (int i = 1; isMark(player, location.x - i, location.y + i); i++) {
+            buffer++;
+        }
+        return buffer >= size;
+    }
+
+    private boolean isMark(Player player, int x, int y) {
+        return x >= 0 && x < size && y >= 0 && y < size && field[x][y] == player.getMark();
     }
 }
